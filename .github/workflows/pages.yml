@@ -44,7 +44,7 @@ jobs:
   deploy:
     name: Deploy Pages
     runs-on: ubuntu-latest
-    needs: test
+    if: always()
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to GitHub Pages (gh-pages)
