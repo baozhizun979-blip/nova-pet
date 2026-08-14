@@ -18,7 +18,7 @@ jobs:
       - name: Prepare environment
         run: |
           cd server
-          npm ci
+          npm install
       - name: Run tests with retries and remediation
         id: run_tests
         run: |
@@ -35,7 +35,7 @@ jobs:
               # remediation steps
               echo "Running remediation: reinstall deps and re-run migrations"
               rm -rf node_modules package-lock.json
-              npm ci || true
+              npm install || true
               node src/migrate.js || true
               sleep 2
             fi
@@ -52,7 +52,7 @@ jobs:
           cd server
           npm test || true > $LOGS 2>&1
           TITLE="CI: server tests failed after retries on $GITHUB_REF"
-          BODY="Automated CI tried remediation steps (reinstall deps, run migrations) $MAX_RETRIES times but tests still fail. Logs:\n\n$(sed 's/"/\\"/g' $LOGS)"
+          BODY="Automated CI tried remediation steps (reinstall deps, run migrations) 3 times but tests still fail. Logs:\n\n$(sed 's/"/\\"/g' $LOGS)"
           api_url="https://api.github.com/repos/${{ github.repository }}/issues"
           curl -s -S -H "Authorization: token $GITHUB_TOKEN" -X POST --data "{\"title\": \"${TITLE}\", \"body\": \"${BODY}\"}" $api_url
       - name: Collect test logs artifact (always)
