@@ -1,55 +1,29 @@
-name: Test and Deploy Pages
+name: Publish Docs to GitHub Pages
 
 on:
   push:
     branches: [ main ]
 
+permissions:
+  pages: write
+  id-token: write
+
 jobs:
-  test:
-    name: Run server tests
+  publish:
+    name: Publish docs/
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          node-version: '18'
-      - name: Install deps
-        working-directory: ./server
-        run: |
-          npm ci || npm install
+          path: ./docs
 
-      - name: Run tests (capture output)
-        working-directory: ./server
-        shell: bash
-        run: |
-          set -o pipefail
-          npm test 2>&1 | tee ../test-output.txt
-          echo $? > ../test-exit-code.txt
-
-      - name: Upload test logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-test-output
-          path: ./test-output.txt
-
-      - name: Fail if tests failed
-        if: ${{ always() }}
-        run: |
-          code=$(cat ./test-exit-code.txt || echo 0)
-          echo "test exit code: $code"
-          if [ "$code" != "0" ]; then exit $code; fi
-
-  deploy:
-    name: Deploy Pages
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to GitHub Pages (gh-pages)
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          publish_branch: gh-pages
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
+        with: {}
