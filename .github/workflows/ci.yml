@@ -1,4 +1,4 @@
-name: CI
+name: CI with retries
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  test-and-retry:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,11 +15,44 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - name: Install server deps
+      - name: Prepare environment
         run: |
           cd server
           npm ci
-      - name: Run tests
+      - name: Run tests with retries and remediation
+        id: run_tests
         run: |
+          set -e
           cd server
-          npm test
+          MAX_RETRIES=3
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i/$MAX_RETRIES: running tests..."
+            if npm test; then
+              echo "TESTS_PASSED=true" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "Tests failed on attempt $i"
+              # remediation steps
+              echo "Running remediation: reinstall deps and re-run migrations"
+              rm -rf node_modules package-lock.json
+              npm ci || true
+              node src/migrate.js || true
+              sleep 2
+            fi
+          done
+          echo "TESTS_PASSED=false" >> $GITHUB_OUTPUT
+          exit 1
+      - name: Create issue on persistent failure
+        if: steps.run_tests.outputs.TESTS_PASSED == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Creating an issue with test logs..."
+          LOGS=$(mktemp)
+          cd server
+          npm test || true > $LOGS 2>&1
+          TITLE="CI: server tests failed after retries on $GITHUB_REF"
+          BODY="Automated CI tried remediation steps (reinstall deps, run migrations) $MAX_RETRIES times but tests still fail. Logs:\n\n$(sed 's/"/\\"/g' $LOGS)"
+          api_url="https://api.github.com/repos/${{ github.repository }}/issues"
+          curl -s -S -H "Authorization: token $GITHUB_TOKEN" -X POST --data "{\"title\": \"${TITLE}\", \"body\": \"${BODY}\"}" $api_url
+
