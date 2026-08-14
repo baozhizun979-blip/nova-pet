@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "Nova Pet API","version":"1.0.0"},
+  "paths": {
+    "/api/identity": {"post":{"summary":"Create or fetch identity","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/IdentityRequest"}}}},"responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"$ref":"#/components/schemas/IdentityResponse"}}}}}}},
+    "/api/hatch": {"post":{"summary":"Hatch pet","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/HatchRequest"}}}},"responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"$ref":"#/components/schemas/HatchResponse"}}}}}}},
+    "/api/action": {"post":{"summary":"Perform action","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ActionRequest"}}}},"responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ActionResponse"}}}}}}},
+    "/api/task": {"post":{"summary":"Claim or list tasks","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/TaskRequest"}}}},"responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"$ref":"#/components/schemas/TaskResponse"}}}}}}},
+    "/api/recovery": {"post":{"summary":"Account recovery","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RecoveryRequest"}}}},"responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RecoveryResponse"}}}}}}},
+    "/api/shop": {"post":{"summary":"Create order","requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShopRequest"}}}},"responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ShopResponse"}}}}}}}
+  },
+  "components": {
+    "schemas": {
+      "IdentityRequest": {"type":"object","required":["telegramId"],"properties":{"telegramId":{"type":"string"},"source":{"type":"string"}}},
+      "IdentityResponse": {"type":"object","properties":{"novaId":{"type":"string"},"created":{"type":"boolean"}}},
+      "HatchRequest": {"type":"object","required":["novaId","eggType"],"properties":{"novaId":{"type":"string"},"eggType":{"type":"string"},"eventId":{"type":"string"}}},
+      "HatchResponse": {"type":"object","properties":{"petId":{"type":"string"}}},
+      "ActionRequest": {"type":"object","required":["novaId","actionType","actionId"],"properties":{"novaId":{"type":"string"},"actionType":{"type":"string"},"actionId":{"type":"string"},"payload":{"type":"object"}}},
+      "ActionResponse": {"type":"object","properties":{"actionId":{"type":"string"},"result":{"type":"string"}}},
+      "TaskRequest": {"type":"object","required":["novaId"],"properties":{"novaId":{"type":"string"},"taskId":{"type":"string"},"op":{"type":"string","enum":["list","claim"]}}},
+      "TaskResponse": {"type":"object","properties":{"tasks":{"type":"array","items":{"type":"object"}}}},
+      "RecoveryRequest": {"type":"object","required":["novaId","method"],"properties":{"novaId":{"type":"string"},"method":{"type":"string"},"payload":{"type":"object"}}},
+      "RecoveryResponse": {"type":"object","properties":{"ok":{"type":"boolean"}}},
+      "ShopRequest": {"type":"object","required":["novaId","sku"],"properties":{"novaId":{"type":"string"},"sku":{"type":"string"},"quantity":{"type":"integer","minimum":1}}},
+      "ShopResponse": {"type":"object","properties":{"orderId":{"type":"string"}}}
+    }
+  }
+}
