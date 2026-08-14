@@ -1,0 +1,15 @@
+:root{--bg:#0b1220;--card:#0f1724;--accent:#7dd3fc;--muted:#9ca3af}
+*{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+body{margin:0;background:linear-gradient(180deg,var(--bg),#071028);color:#e6eef8}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(255,255,255,0.02)}
+header h1{margin:0;font-size:18px}
+nav a{color:var(--muted);margin:0 8px;text-decoration:none}
+nav a:hover{color:var(--accent)}
+main{padding:20px;min-height:60vh}
+.card{background:var(--card);padding:16px;border-radius:8px;margin-bottom:12px}
+button{background:var(--accent);border:none;color:#082033;padding:8px 12px;border-radius:6px;cursor:pointer}
+footer{padding:12px 20px;color:var(--muted);font-size:13px}
+.row{display:flex;gap:12px}
+.pet-sprite{width:120px;height:120px;background:linear-gradient(135deg,#ffd27a,#ff7ab0);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#082033}
+.muted{color:var(--muted)}
+.small{font-size:13px}
