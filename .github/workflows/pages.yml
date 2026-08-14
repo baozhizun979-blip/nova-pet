@@ -14,11 +14,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - name: Install deps and run tests
+      - name: Install deps
         working-directory: ./server
         run: |
           npm ci
-          npm test --silent
+
+      - name: Run tests (capture output)
+        working-directory: ./server
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee ../test-output.txt
+          echo $? > ../test-exit-code.txt
+
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-output
+          path: ./test-output.txt
+
+      - name: Fail if tests failed
+        if: ${{ always() }}
+        run: |
+          code=$(cat ./test-exit-code.txt || echo 0)
+          echo "test exit code: $code"
+          if [ "$code" != "0" ]; then exit $code; fi
 
   deploy:
     name: Deploy Pages
