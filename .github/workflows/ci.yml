@@ -55,17 +55,16 @@ jobs:
           BODY="Automated CI tried remediation steps (reinstall deps, run migrations) 3 times but tests still fail. Logs:\n\n$(sed 's/"/\\"/g' $LOGS)"
           api_url="https://api.github.com/repos/${{ github.repository }}/issues"
           curl -s -S -H "Authorization: token $GITHUB_TOKEN" -X POST --data "{\"title\": \"${TITLE}\", \"body\": \"${BODY}\"}" $api_url
-      - name: Collect test logs artifact (always)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-test-output
-          path: |
-            server/test-output.txt
       - name: Generate test log file
         if: always()
         run: |
           cd server
           npm test > ../server-test-output.log 2>&1 || true
           mv ../server-test-output.log ./test-output.txt
+      - name: Collect test logs artifact (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-output
+          path: server/test-output.txt
 
