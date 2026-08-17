@@ -18,7 +18,7 @@ jobs:
       - name: Prepare environment
         run: |
           cd server
-          npm ci || npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
       - name: Run tests with retries and remediation
         id: run_tests
         run: |
@@ -34,8 +34,8 @@ jobs:
               echo "Tests failed on attempt $i"
               # remediation steps
               echo "Running remediation: reinstall deps and re-run migrations"
-              rm -rf node_modules package-lock.json
-              npm install || true
+              rm -rf node_modules
+              npm ci --no-audit --no-fund || true
               node src/migrate.js || true
               sleep 2
             fi

@@ -39,3 +39,22 @@ test('shop creates order', async () => {
   expect(res.statusCode).toBe(200);
   expect(res.body.orderId).toBeDefined();
 });
+
+test('recovery finds an existing identity', async () => {
+  const identity = await request(app).post('/api/identity').send({telegramId:'tg_recovery'});
+  const res = await request(app).post('/api/recovery').send({novaId:identity.body.novaId, method:'telegram'});
+  expect(res.statusCode).toBe(200);
+  expect(res.body.ok).toBe(true);
+});
+
+test('shop rejects quantities below the OpenAPI minimum', async () => {
+  const res = await request(app).post('/api/shop').send({novaId:'nova_1', sku:'hat', quantity:0});
+  expect(res.statusCode).toBe(400);
+  expect(res.body.error).toMatch(/at least 1/);
+});
+
+test('task rejects operations outside the OpenAPI enum', async () => {
+  const res = await request(app).post('/api/task').send({novaId:'nova_1', op:'delete'});
+  expect(res.statusCode).toBe(400);
+  expect(res.body.error).toMatch(/must be one of/);
+});

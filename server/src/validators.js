@@ -1,4 +1,8 @@
-const openapi = require('../../api/openapi.json');
+const fs = require('fs');
+const path = require('path');
+
+const openapiPath = path.join(__dirname, '..', '..', 'api', 'openapi.json');
+const openapi = JSON.parse(fs.readFileSync(openapiPath, 'utf8'));
 
 function validate(schemaName, obj) {
   const schema = openapi.components.schemas[schemaName];
@@ -15,7 +19,11 @@ function validate(schemaName, obj) {
       const t = typeof obj[k];
       if (prop.type === 'integer' && !Number.isInteger(obj[k])) return {ok:false, error:`${k} must be integer`};
       if (prop.type === 'string' && t !== 'string') return {ok:false, error:`${k} must be string`};
-      if (prop.type === 'object' && t !== 'object') return {ok:false, error:`${k} must be object`};
+      if (prop.type === 'object' && (t !== 'object' || Array.isArray(obj[k]))) return {ok:false, error:`${k} must be object`};
+      if (prop.type === 'array' && !Array.isArray(obj[k])) return {ok:false, error:`${k} must be array`};
+      if (prop.type === 'boolean' && t !== 'boolean') return {ok:false, error:`${k} must be boolean`};
+      if (prop.minimum !== undefined && obj[k] < prop.minimum) return {ok:false, error:`${k} must be at least ${prop.minimum}`};
+      if (prop.enum && !prop.enum.includes(obj[k])) return {ok:false, error:`${k} must be one of ${prop.enum.join(', ')}`};
     }
   }
   return {ok:true};
