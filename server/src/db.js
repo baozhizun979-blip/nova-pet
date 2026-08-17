@@ -44,6 +44,11 @@ const db = {
         }
       };
     }
+    if (lower.includes('select novaid from identities where novaid =')) {
+      return {
+        get: (novaId) => store.identities[novaId] ? { novaId } : undefined
+      };
+    }
     if (lower.includes('insert into identities')) {
       return { run: (novaId, telegramId, createdAt) => { store.identities[novaId] = { novaId, telegramId, createdAt }; persist(); } };
     }

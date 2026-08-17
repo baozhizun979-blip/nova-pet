@@ -18,7 +18,7 @@ jobs:
       - name: Prepare environment
         run: |
           cd server
-          npm ci || npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
       - name: Run tests with retries and remediation
         id: run_tests
         run: |
@@ -34,8 +34,8 @@ jobs:
               echo "Tests failed on attempt $i"
               # remediation steps
               echo "Running remediation: reinstall deps and re-run migrations"
-              rm -rf node_modules package-lock.json
-              npm install || true
+              rm -rf node_modules
+              npm ci --no-audit --no-fund || true
               node src/migrate.js || true
               sleep 2
             fi
@@ -55,17 +55,16 @@ jobs:
           BODY="Automated CI tried remediation steps (reinstall deps, run migrations) 3 times but tests still fail. Logs:\n\n$(sed 's/"/\\"/g' $LOGS)"
           api_url="https://api.github.com/repos/${{ github.repository }}/issues"
           curl -s -S -H "Authorization: token $GITHUB_TOKEN" -X POST --data "{\"title\": \"${TITLE}\", \"body\": \"${BODY}\"}" $api_url
-      - name: Collect test logs artifact (always)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-test-output
-          path: |
-            server/test-output.txt
       - name: Generate test log file
         if: always()
         run: |
           cd server
           npm test > ../server-test-output.log 2>&1 || true
           mv ../server-test-output.log ./test-output.txt
+      - name: Collect test logs artifact (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-test-output
+          path: server/test-output.txt
 
